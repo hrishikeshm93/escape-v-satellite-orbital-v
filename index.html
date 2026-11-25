@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gravitation: An Interactive E-Book</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- MathJax for Physics Derivations -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        space: {
+                            900: '#0b0f19',
+                            800: '#151e32',
+                            700: '#23304c',
+                            accent: '#3b82f6',
+                            highlight: '#f59e0b'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #0b0f19;
+            color: #e2e8f0;
+            overflow-x: hidden;
+        }
+        
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        .tab-content.active {
+            display: block;
+        }
+
+        .tab-btn.active {
+            background-color: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        canvas {
+            background: radial-gradient(circle at center, #151e32 0%, #0b0f19 100%);
+            border-radius: 0.75rem;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+            border: 1px solid #23304c;
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            display: block;
+        }
+
+        .math-box {
+            background: #151e32;
+            border-left: 4px solid #3b82f6;
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 0 0.5rem 0.5rem 0;
+            overflow-x: auto;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0b0f19; }
+        ::-webkit-scrollbar-thumb { background: #23304c; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #3b82f6; }
+    </style>
+</head>
+<body class="font-sans antialiased text-gray-200">
+
+    <!-- Header -->
+    <header class="bg-space-800 border-b border-space-700 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-4">
+                <div>
+                    <h1 class="text-2xl font-bold text-white tracking-tight">Gravitation <span class="text-space-highlight">Interactive</span></h1>
+                    <p class="text-sm text-gray-400">Class XI Physics (NCERT)</p>
+                </div>
+                <div class="text-right">
+                    <p class="text-xs text-gray-500">Created by</p>
+                    <p class="text-sm font-semibold text-space-accent">Hrishikesh M (PGT Physics)</p>
+                </div>
+            </div>
+            
+            <!-- Navigation Tabs -->
+            <nav class="flex space-x-2 overflow-x-auto py-2 pb-4 scrollbar-hide">
+                <button onclick="switchTab('escape')" class="tab-btn active px-4 py-2 text-sm font-medium rounded-full border border-space-700 text-gray-300 hover:bg-space-700 whitespace-nowrap transition-all">1. Escape Speed</button>
+                <button onclick="switchTab('satellites')" class="tab-btn px-4 py-2 text-sm font-medium rounded-full border border-space-700 text-gray-300 hover:bg-space-700 whitespace-nowrap transition-all">2. Satellites</button>
+                <button onclick="switchTab('orbital')" class="tab-btn px-4 py-2 text-sm font-medium rounded-full border border-space-700 text-gray-300 hover:bg-space-700 whitespace-nowrap transition-all">3. Orbital Speed</button>
+                <button onclick="switchTab('time')" class="tab-btn px-4 py-2 text-sm font-medium rounded-full border border-space-700 text-gray-300 hover:bg-space-700 whitespace-nowrap transition-all">4. Time Period</button>
+                <button onclick="switchTab('energy')" class="tab-btn px-4 py-2 text-sm font-medium rounded-full border border-space-700 text-gray-300 hover:bg-space-700 whitespace-nowrap transition-all">5. Energy of Satellite</button>
+                <button onclick="switchTab('practice')" class="tab-btn px-4 py-2 text-sm font-medium rounded-full border border-space-700 text-gray-300 hover:bg-space-700 whitespace-nowrap transition-all">6. Numericals</button>
+                <button onclick="switchTab('quiz')" class="tab-btn px-4 py-2 text-sm font-medium rounded-full border border-space-highlight text-space-highlight hover:bg-space-highlight hover:text-white whitespace-nowrap transition-all">7. Final Quiz</button>
+            </nav>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <!-- TAB 1: Escape Speed -->
+        <section id="escape" class="tab-content active">
+            <h2 class="text-3xl font-bold text-white mb-6">Escape Speed (Escape Velocity)</h2>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div>
+                    <p class="mb-4 text-gray-300 leading-relaxed">
+                        <strong class="text-white">Escape speed</strong> on earth (or any other planet) is defined as the minimum speed with which a body has to be projected vertically upwards from the surface of earth so that it just crosses the gravitational field of earth and never returns on its own.
+                    </p>
+                    
+                    <h3 class="text-xl font-semibold text-space-accent mt-6 mb-2">First Method (Calculus)</h3>
+                    <div class="math-box">
+                        <p>Work done in taking a body of mass \(m\) against gravitational attraction from \(x\) to \(x + dx\):</p>
+                        $$ dW = F \, dx = \frac{GMm}{x^2} dx $$
+                        <p>Total work from surface (\(x=R\)) to infinity (\(x=\infty\)):</p>
+                        $$ W = \int_{R}^{\infty} \frac{GMm}{x^2} dx = GMm \left[ \frac{-1}{x} \right]_{R}^{\infty} = \frac{GMm}{R} $$
+                        <p>This work is provided by initial Kinetic Energy:</p>
+                        $$ \frac{1}{2}mv_e^2 = \frac{GMm}{R} \implies v_e = \sqrt{\frac{2GM}{R}} $$
+                    </div>
+
+                    <h3 class="text-xl font-semibold text-space-accent mt-6 mb-2">Second Method (Conservation of Energy)</h3>
+                    <div class="math-box">
+                        <p>Let \(v_e\) be the escape speed. At the surface of earth, Total Energy = K.E. + P.E.</p>
+                        <p>At infinity, Total Energy is zero (barely escapes).</p>
+                        $$ \frac{1}{2}mv_e^2 + \left(-\frac{GMm}{R}\right) = 0 $$
+                        $$ \implies \frac{1}{2}mv_e^2 = \frac{GMm}{R} \implies v_e = \sqrt{\frac{2GM}{R}} $$
+                    </div>
+                    <p class="mt-4 text-sm bg-space-800 p-3 rounded-lg border border-space-700">
+                        Since \( g = \frac{GM}{R^2} \), we can also write \( v_e = \sqrt{2gR} \). For Earth, \( v_e \approx 11.2 \text{ km/s} \).
+                    </p>
+                </div>
+                
+                <div class="bg-space-800 p-4 rounded-xl border border-space-700">
+                    <h3 class="text-lg font-semibold text-center mb-2">Interactive Simulation</h3>
+                    <p class="text-sm text-center text-gray-400 mb-4">Adjust launch velocity to see if the rocket escapes Earth's gravity.</p>
+                    <canvas id="escapeCanvas" width="400" height="400"></canvas>
+                    <div class="mt-4 flex flex-col items-center">
+                        <label for="velSlider" class="text-sm mb-2">Launch Velocity: <span id="velDisplay" class="font-bold text-space-highlight">8.0</span> km/s</label>
+                        <input type="range" id="velSlider" min="5" max="15" step="0.1" value="8" class="w-full max-w-xs cursor-pointer">
+                        <button onclick="launchRocket()" class="mt-4 bg-space-accent hover:bg-blue-600 text-white font-bold py-2 px-6 rounded-full transition">Launch Rocket</button>
+                        <p id="escapeResult" class="mt-2 text-sm font-semibold h-5"></p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 2: Satellites -->
+        <section id="satellites" class="tab-content">
+            <h2 class="text-3xl font-bold text-white mb-6">Satellites</h2>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div>
+                    <p class="mb-4">A satellite is a body which is revolving continuously in an orbit around a comparatively much larger body.</p>
+                    
+                    <h3 class="text-xl font-semibold text-space-highlight mt-6 mb-2">1. Geostationary (Geosynchronous) Satellites</h3>
+                    <ul class="list-disc list-inside text-gray-300 space-y-2 mb-4">
+                        <li>Appears fixed at a definite height to an observer on Earth.</li>
+                        <li><strong>Time period:</strong> 24 hours (synchronous with Earth's rotation).</li>
+                        <li><strong>Height:</strong> Approx. 36,000 km above the equator.</li>
+                        <li><strong>Orbital Speed:</strong> Approx. 3.1 km/s.</li>
+                        <li><strong>Direction:</strong> West to East (same as Earth).</li>
+                        <li><strong>Uses:</strong> Communication (e.g., INSAT series, Telstar).</li>
+                    </ul>
+
+                    <h3 class="text-xl font-semibold text-space-accent mt-6 mb-2">2. Polar Satellites</h3>
+                    <ul class="list-disc list-inside text-gray-300 space-y-2 mb-4">
+                        <li>Revolve in polar orbits (inclination of \(90^\circ\) with equatorial plane).</li>
+                        <li><strong>Altitude:</strong> Low altitude, typically 500 to 800 km.</li>
+                        <li><strong>Time period:</strong> Approx. 100 minutes.</li>
+                        <li>Crosses any location on Earth many times a day.</li>
+                        <li><strong>Uses:</strong> Remote sensing, weather monitoring, environmental studies (e.g., IRS series).</li>
+                    </ul>
+                </div>
+
+                <div class="bg-space-800 p-4 rounded-xl border border-space-700">
+                    <h3 class="text-lg font-semibold text-center mb-2">Orbit Visualizer</h3>
+                    <p class="text-sm text-center text-gray-400 mb-4">Comparison of Equatorial (Geostationary) vs Polar Orbits.</p>
+                    <canvas id="satelliteCanvas" width="400" height="400"></canvas>
+                    <div class="mt-4 text-sm flex justify-center space-x-6">
+                        <div class="flex items-center"><span class="w-3 h-3 rounded-full bg-yellow-400 mr-2"></span> Geostationary (High, Slow)</div>
+                        <div class="flex items-center"><span class="w-3 h-3 rounded-full bg-green-400 mr-2"></span> Polar (Low, Fast)</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 3: Orbital Speed -->
+        <section id="orbital" class="tab-content">
+            <h2 class="text-3xl font-bold text-white mb-6">Orbital Speed of a Satellite</h2>
+            
+            <div class="bg-space-800 p-6 rounded-xl border border-space-700 mb-8">
+                <p class="text-lg mb-4 text-gray-300"><strong>Orbital speed (\(v_0\))</strong> is the minimum speed required to put the satellite into a given orbit around earth.</p>
+                
+                <h3 class="text-xl font-semibold text-space-accent mb-2">Step-by-Step Derivation</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                    <div class="math-box m-0">
+                        <p>Let \(M\) = mass of Earth, \(R\) = radius of Earth.</p>
+                        <p>Let \(m\) = mass of satellite, \(v\) = orbital speed.</p>
+                        <p>Let \(h\) = height of satellite, so orbit radius \(r = R + h\).</p>
+                        <br>
+                        <p>Centripetal force required to keep satellite in orbit:</p>
+                        $$ F_c = \frac{mv^2}{r} $$
+                        <p>This is provided by the gravitational pull:</p>
+                        $$ F_g = \frac{GMm}{r^2} $$
+                        <p>In equilibrium, \( F_c = F_g \):</p>
+                        $$ \frac{mv^2}{r} = \frac{GMm}{r^2} $$
+                        $$ v^2 = \frac{GM}{r} \implies v = \sqrt{\frac{GM}{r}} = \sqrt{\frac{GM}{R+h}} $$
+                    </div>
+                    <div>
+                        <div class="bg-space-900 p-4 rounded-lg border border-space-700">
+                            <h4 class="font-semibold text-white mb-2">Key Observations:</h4>
+                            <ul class="list-disc list-inside text-sm space-y-2 text-gray-400">
+                                <li>Orbital speed is <strong>independent of the mass</strong> (\(m\)) of the satellite.</li>
+                                <li>It <strong>decreases</strong> with an increase in radius of orbit (\(r\)).</li>
+                                <li>If the satellite orbits very close to Earth's surface (\(h \ll R\)), then \(r \approx R\).</li>
+                            </ul>
+                            <div class="math-box text-sm mt-4">
+                                $$ v_0 = \sqrt{\frac{GM}{R}} = \sqrt{gR} $$
+                                <p class="text-center mt-2">For Earth, \(v_0 \approx 7.92 \text{ km/s} \)</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-space-800 p-4 rounded-xl border border-space-700 flex flex-col items-center">
+                <h3 class="text-lg font-semibold mb-2">Orbital Speed Simulator</h3>
+                <canvas id="orbitalCanvas" width="600" height="300" class="max-w-full"></canvas>
+                <div class="mt-4 w-full max-w-md text-center">
+                    <label class="text-sm">Orbital Radius (r): <span id="rDisplay" class="font-bold text-space-highlight">Medium</span></label>
+                    <input type="range" id="radiusSlider" min="1.2" max="4" step="0.1" value="2" class="w-full mt-2">
+                    <p class="text-xs text-gray-400 mt-2">Notice how the satellite moves slower as the orbital radius increases.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 4: Time Period -->
+        <section id="time" class="tab-content">
+            <h2 class="text-3xl font-bold text-white mb-6">Time Period of a Satellite</h2>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div>
+                    <p class="mb-4 text-gray-300">The time taken by a satellite to complete one revolution around the earth is its Time Period (\(T\)).</p>
+                    
+                    <div class="math-box">
+                        <p>Distance travelled in one revolution = \(2\pi r\)</p>
+                        <p>Orbital velocity = \(v\)</p>
+                        $$ T = \frac{\text{distance}}{\text{velocity}} = \frac{2\pi r}{v} $$
+                        <p>Substituting \(v = \sqrt{\frac{GM}{r}}\):</p>
+                        $$ T = \frac{2\pi r}{\sqrt{GM/r}} = 2\pi \sqrt{\frac{r^3}{GM}} $$
+                        $$ T = 2\pi \sqrt{\frac{(R+h)^3}{GM}} $$
+                    </div>
+
+                    <h3 class="text-xl font-semibold text-space-accent mt-6 mb-2">Special Case & Altitude</h3>
+                    <p class="text-sm text-gray-400 mb-2">For a satellite orbiting very close to Earth (\(h \ll R\)):</p>
+                    <div class="bg-space-800 p-3 rounded text-center border border-space-700 mb-4">
+                        $$ T = 2\pi \sqrt{\frac{R}{g}} \approx 84.6 \text{ minutes} $$
+                    </div>
+                    
+                    <p class="text-sm text-gray-400 mb-2">Squaring the formula gives altitude \(h\):</p>
+                    <div class="bg-space-800 p-3 rounded text-center border border-space-700">
+                        $$ h = \left( \frac{T^2 R^2 g}{4\pi^2} \right)^{1/3} - R $$
+                    </div>
+                </div>
+
+                <div class="bg-space-800 p-6 rounded-xl border border-space-700 flex flex-col justify-center">
+                    <h3 class="text-lg font-semibold text-space-highlight mb-4">Angular Momentum (L)</h3>
+                    <p class="text-sm text-gray-300 mb-4">When a satellite of mass \(m\) orbits with linear speed \(v\) in an orbit of radius \(r\), its angular momentum is:</p>
+                    <div class="math-box">
+                        $$ L = m v r $$
+                        $$ L = m \left( \sqrt{\frac{GM}{r}} \right) r = m \sqrt{GMr} $$
+                    </div>
+                    <p class="text-sm text-gray-400 mt-4">
+                        Angular momentum depends on both the mass of the satellite (\(m\)), the mass of the planet (\(M\)), and the radius of the orbit (\(r\)).
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 5: Energy -->
+        <section id="energy" class="tab-content">
+            <h2 class="text-3xl font-bold text-white mb-6">Energy of an Orbiting Satellite</h2>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div>
+                    <p class="mb-4 text-gray-300">The total mechanical energy (\(E\)) of a satellite is the sum of its potential energy (\(U\)) and kinetic energy (\(K\)).</p>
+                    
+                    <div class="space-y-4">
+                        <div class="bg-space-800 p-4 rounded border border-space-700 border-l-4 border-l-red-500">
+                            <h4 class="font-bold text-white mb-1">1. Potential Energy (U)</h4>
+                            <p class="text-sm text-gray-400 mb-2">Due to position w.r.t Earth. It is negative indicating binding force.</p>
+                            $$ U = -\frac{GMm}{r} $$
+                        </div>
+                        
+                        <div class="bg-space-800 p-4 rounded border border-space-700 border-l-4 border-l-blue-500">
+                            <h4 class="font-bold text-white mb-1">2. Kinetic Energy (K)</h4>
+                            <p class="text-sm text-gray-400 mb-2">Due to its orbital motion (\(v = \sqrt{GM/r}\)).</p>
+                            $$ K = \frac{1}{2}mv^2 = \frac{GMm}{2r} $$
+                        </div>
+
+                        <div class="bg-space-800 p-4 rounded border border-space-700 border-l-4 border-l-purple-500">
+                            <h4 class="font-bold text-white mb-1">3. Total Energy (E)</h4>
+                            $$ E = U + K = -\frac{GMm}{r} + \frac{GMm}{2r} = -\frac{GMm}{2r} $$
+                            <p class="text-xs text-gray-400 mt-2">The negative sign signifies that the satellite is bound to Earth.</p>
+                        </div>
+                    </div>
+
+                    <h3 class="text-xl font-semibold text-space-accent mt-6 mb-2">Binding Energy</h3>
+                    <p class="text-sm text-gray-300 mb-2">The energy required to remove the satellite from its orbit to infinity.</p>
+                    <div class="math-box text-center">
+                        $$ \text{Binding Energy} = -E = +\frac{GMm}{2r} $$
+                    </div>
+                </div>
+
+                <div class="bg-space-800 p-4 rounded-xl border border-space-700">
+                    <h3 class="text-lg font-semibold text-center mb-2">Variation of Energy with Radius (r)</h3>
+                    <p class="text-xs text-center text-gray-400 mb-4">Graphical representation of K, U, and E.</p>
+                    <canvas id="energyCanvas" width="400" height="350"></canvas>
+                    <div class="mt-4 flex flex-col items-center space-y-1 text-sm">
+                        <div class="flex items-center"><span class="w-4 h-1 bg-blue-500 mr-2"></span> K(r) - Kinetic Energy (Positive)</div>
+                        <div class="flex items-center"><span class="w-4 h-1 bg-purple-500 mr-2"></span> E(r) - Total Energy (Negative)</div>
+                        <div class="flex items-center"><span class="w-4 h-1 bg-red-500 mr-2 line-through"></span> U(r) - Potential Energy (Most Negative)</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 6: Numericals -->
+        <section id="practice" class="tab-content">
+            <h2 class="text-3xl font-bold text-white mb-6">Practice Numericals</h2>
+            <p class="text-gray-400 mb-6">Click on "Show Solution" to verify your answers.</p>
+
+            <div class="space-y-4">
+                <!-- Q1 -->
+                <div class="bg-space-800 rounded-lg p-5 border border-space-700">
+                    <p class="font-semibold mb-2">Q1: The escape velocity from Earth is \(11.2 \text{ km/s}\). What will be the escape velocity from a planet whose mass and radius are twice that of Earth?</p>
+                    <button onclick="toggleSolution('sol1')" class="text-sm bg-space-700 hover:bg-space-600 px-3 py-1 rounded transition">Show Solution</button>
+                    <div id="sol1" class="hidden mt-3 pt-3 border-t border-space-700 text-sm math-box">
+                        $$ v_e = \sqrt{\frac{2GM}{R}} $$
+                        For new planet: \( M' = 2M, R' = 2R \)
+                        $$ v_e' = \sqrt{\frac{2G(2M)}{2R}} = \sqrt{\frac{2GM}{R}} = v_e $$
+                        <p class="mt-2 text-green-400 font-bold">Answer: 11.2 km/s</p>
+                    </div>
+                </div>
+
+                <!-- Q2 -->
+                <div class="bg-space-800 rounded-lg p-5 border border-space-700">
+                    <p class="font-semibold mb-2">Q2: An artificial satellite circles around the Earth at a distance of 3600 km from the surface. Find its orbital velocity. (Given: \(R = 6400 \text{ km}\), \(g = 10 \text{ m/s}^2\))</p>
+                    <button onclick="toggleSolution('sol2')" class="text-sm bg-space-700 hover:bg-space-600 px-3 py-1 rounded transition">Show Solution</button>
+                    <div id="sol2" class="hidden mt-3 pt-3 border-t border-space-700 text-sm math-box">
+                        \( h = 3600 \text{ km}, R = 6400 \text{ km} \implies r = R+h = 10000 \text{ km} = 10^7 \text{ m} \)
+                        $$ v = R \sqrt{\frac{g}{r}} $$
+                        $$ v = 6.4 \times 10^6 \sqrt{\frac{10}{10^7}} = 6.4 \times 10^6 \times 10^{-3} = 6.4 \times 10^3 \text{ m/s} $$
+                        <p class="mt-2 text-green-400 font-bold">Answer: 6.4 km/s</p>
+                    </div>
+                </div>
+
+                <!-- Q3 -->
+                <div class="bg-space-800 rounded-lg p-5 border border-space-700">
+                    <p class="font-semibold mb-2">Q3: Find the period of revolution of the satellite in Q2.</p>
+                    <button onclick="toggleSolution('sol3')" class="text-sm bg-space-700 hover:bg-space-600 px-3 py-1 rounded transition">Show Solution</button>
+                    <div id="sol3" class="hidden mt-3 pt-3 border-t border-space-700 text-sm math-box">
+                        $$ T = \frac{2\pi r}{v} $$
+                        $$ T = \frac{2 \times 3.14 \times 10^7}{6.4 \times 10^3} \approx 9812.5 \text{ s} $$
+                        <p class="mt-2 text-green-400 font-bold">Answer: 9812.5 s (or ~2.72 hours)</p>
+                    </div>
+                </div>
+
+                <!-- Q4 -->
+                <div class="bg-space-800 rounded-lg p-5 border border-space-700">
+                    <p class="font-semibold mb-2">Q4: A satellite of mass 500 kg orbits Earth at height \(3.6 \times 10^6 \text{ m}\). Calculate its kinetic energy. (\(M_e = 6 \times 10^{24} \text{ kg}\), \(R_e = 6.4 \times 10^6 \text{ m}\), \(G = 6.67 \times 10^{-11} \text{ N m}^2/\text{kg}^2\))</p>
+                    <button onclick="toggleSolution('sol4')" class="text-sm bg-space-700 hover:bg-space-600 px-3 py-1 rounded transition">Show Solution</button>
+                    <div id="sol4" class="hidden mt-3 pt-3 border-t border-space-700 text-sm math-box">
+                        \( r = R_e + h = 6.4 \times 10^6 + 3.6 \times 10^6 = 10^7 \text{ m} \)
+                        $$ K = \frac{GMm}{2r} $$
+                        $$ K = \frac{6.67 \times 10^{-11} \times 6 \times 10^{24} \times 500}{2 \times 10^7} = 10^{10} \text{ J} $$
+                        <p class="mt-2 text-green-400 font-bold">Answer: \(10^{10} \text{ J}\)</p>
+                    </div>
+                </div>
+
+                <!-- Q5 -->
+                <div class="bg-space-800 rounded-lg p-5 border border-space-700">
+                    <p class="font-semibold mb-2">Q5: What is the binding energy of the satellite described in Q4?</p>
+                    <button onclick="toggleSolution('sol5')" class="text-sm bg-space-700 hover:bg-space-600 px-3 py-1 rounded transition">Show Solution</button>
+                    <div id="sol5" class="hidden mt-3 pt-3 border-t border-space-700 text-sm math-box">
+                        Total Energy \( E = -K = -10^{10} \text{ J} \)
+                        Binding Energy = \( -E \)
+                        <p class="mt-2 text-green-400 font-bold">Answer: \(10^{10} \text{ J}\)</p>
+                    </div>
+                </div>
+
+                <!-- Q6 -->
+                <div class="bg-space-800 rounded-lg p-5 border border-space-700">
+                    <p class="font-semibold mb-2">Q6: What is the approximate height of a geostationary satellite above the equator?</p>
+                    <button onclick="toggleSolution('sol6')" class="text-sm bg-space-700 hover:bg-space-600 px-3 py-1 rounded transition">Show Solution</button>
+                    <div id="sol6" class="hidden mt-3 pt-3 border-t border-space-700 text-sm text-gray-300">
+                        Using the relation \( h = \left( \frac{T^2 R^2 g}{4\pi^2} \right)^{1/3} - R \) and substituting \( T = 24 \text{ hrs} = 86400 \text{ s} \), we get \( h \approx 3.6 \times 10^7 \text{ m} \).
+                        <p class="mt-2 text-green-400 font-bold">Answer: 36,000 km</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 7: Quiz -->
+        <section id="quiz" class="tab-content">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-3xl font-bold text-white">Gamified Quiz Challenge</h2>
+                <div class="bg-space-700 px-4 py-2 rounded-full font-bold text-space-highlight">
+                    Score: <span id="quizScore">0</span> / 8
+                </div>
+            </div>
+
+            <div id="quizContainer" class="space-y-6">
+                <!-- Quiz questions injected here via JS -->
+            </div>
+
+            <div class="mt-8 text-center">
+                <button onclick="submitQuiz()" class="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transform transition hover:scale-105">Submit Answers</button>
+            </div>
+
+            <!-- Custom Modal for Quiz Results -->
+            <div id="quizResultModal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
+                <div class="bg-space-800 p-8 rounded-2xl border border-space-700 max-w-md w-full text-center relative">
+                    <h3 class="text-3xl font-bold text-white mb-2" id="resultTitle">Quiz Complete!</h3>
+                    <p class="text-lg text-gray-300 mb-6">You scored <span id="finalScore" class="text-space-highlight font-bold text-2xl"></span> out of 8.</p>
+                    <p id="resultMessage" class="mb-6 italic text-gray-400"></p>
+                    <button onclick="closeQuizModal()" class="bg-space-accent hover:bg-blue-600 text-white font-bold py-2 px-6 rounded-full transition">Close & Review</button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        // --- UI Logic ---
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            
+            document.getElementById(tabId).classList.add('active');
+            event.target.classList.add('active');
+
+            // Re-render math if hidden initially
+            if(window.MathJax) {
+                MathJax.typesetPromise();
+            }
+        }
+
+        function toggleSolution(solId) {
+            const el = document.getElementById(solId);
+            if (el.classList.contains('hidden')) {
+                el.classList.remove('hidden');
+                el.previousElementSibling.innerText = "Hide Solution";
+            } else {
+                el.classList.add('hidden');
+                el.previousElementSibling.innerText = "Show Solution";
+            }
+        }
+
+        // --- Animations & Simulations Logic ---
+
+        // 1. Escape Velocity Simulation
+        const ctxEscape = document.getElementById('escapeCanvas').getContext('2d');
+        let rocket = { y: 350, v: 0, state: 'idle' }; // Earth surface ~350
+        let launchVel = 8.0;
+        let escapeAnimReq;
+        const earthRadiusEsc = 50;
+
+        function drawEscapeSim() {
+            ctxEscape.clearRect(0, 0, 400, 400);
+            
+            // Draw Earth
+            ctxEscape.beginPath();
+            ctxEscape.arc(200, 400, earthRadiusEsc, 0, Math.PI * 2);
+            ctxEscape.fillStyle = '#3b82f6';
+            ctxEscape.fill();
+            
+            // Draw atmosphere gradient
+            let grd = ctxEscape.createRadialGradient(200, 400, earthRadiusEsc, 200, 400, earthRadiusEsc + 100);
+            grd.addColorStop(0, "rgba(59, 130, 246, 0.3)");
+            grd.addColorStop(1, "rgba(0, 0, 0, 0)");
+            ctxEscape.fillStyle = grd;
+            ctxEscape.beginPath();
+            ctxEscape.arc(200, 400, earthRadiusEsc + 100, 0, Math.PI * 2);
+            ctxEscape.fill();
+
+            // Draw Rocket
+            if(rocket.state !== 'idle') {
+                ctxEscape.fillStyle = 'white';
+                ctxEscape.beginPath();
+                ctxEscape.moveTo(200, rocket.y);
+                ctxEscape.lineTo(195, rocket.y + 15);
+                ctxEscape.lineTo(205, rocket.y + 15);
+                ctxEscape.fill();
+                
+                // Engine flame
+                if(rocket.v > 0) {
+                    ctxEscape.fillStyle = 'orange';
+                    ctxEscape.beginPath();
+                    ctxEscape.moveTo(197, rocket.y + 15);
+                    ctxEscape.lineTo(200, rocket.y + 25 + Math.random()*5);
+                    ctxEscape.lineTo(203, rocket.y + 15);
+                    ctxEscape.fill();
+                }
+            } else {
+                // Rocket on pad
+                ctxEscape.fillStyle = 'white';
+                ctxEscape.fillRect(198, 335, 4, 15);
+            }
+        }
+
+        function launchRocket() {
+            cancelAnimationFrame(escapeAnimReq);
+            const sliderVal = parseFloat(document.getElementById('velSlider').value);
+            rocket.y = 335;
+            rocket.v = sliderVal; // visual scaling
+            rocket.state = 'flying';
+            document.getElementById('escapeResult').innerText = "Launching...";
+            document.getElementById('escapeResult').className = "mt-2 text-sm font-semibold text-yellow-400";
+            updateEscapeSim();
+        }
+
+        function updateEscapeSim() {
+            if(rocket.state === 'flying') {
+                // Faux physics
+                // g decreases with distance: a = -g0 * (R^2 / (R+h)^2)
+                let h = 350 - rocket.y;
+                let g = 0.15 * Math.pow(earthRadiusEsc / (earthRadiusEsc + h), 2); 
+                
+                rocket.v -= g;
+                rocket.y -= rocket.v;
+
+                if (rocket.y > 335) {
+                    rocket.y = 335;
+                    rocket.v = 0;
+                    rocket.state = 'idle';
+                    document.getElementById('escapeResult').innerText = "Failed to escape! Fell back to Earth.";
+                    document.getElementById('escapeResult').className = "mt-2 text-sm font-semibold text-red-400";
+                } else if (rocket.y < -50) {
+                    rocket.state = 'escaped';
+                    document.getElementById('escapeResult').innerText = "Successfully Escaped!";
+                    document.getElementById('escapeResult').className = "mt-2 text-sm font-semibold text-green-400";
+                } else {
+                    escapeAnimReq = requestAnimationFrame(updateEscapeSim);
+                }
+            }
+            drawEscapeSim();
+        }
+
+        document.getElementById('velSlider').addEventListener('input', (e) => {
+            document.getElementById('velDisplay').innerText = e.target.value;
+        });
+        drawEscapeSim();
+
+        // 2. Satellite Orbits Visualizer
+        const ctxSat = document.getElementById('satelliteCanvas').getContext('2d');
+        let angleGeo = 0;
+        let anglePolar = 0;
+
+        function drawSatellites() {
+            ctxSat.clearRect(0, 0, 400, 400);
+            const cx = 200, cy = 200;
+
+            // Draw Earth
+            ctxSat.beginPath();
+            ctxSat.arc(cx, cy, 30, 0, Math.PI * 2);
+            ctxSat.fillStyle = '#3b82f6';
+            ctxSat.fill();
+            // Earth equator line
+            ctxSat.beginPath();
+            ctxSat.moveTo(170, 200); ctxSat.lineTo(230, 200);
+            ctxSat.strokeStyle = 'rgba(255,255,255,0.3)';
+            ctxSat.stroke();
+            // Earth axis
+            ctxSat.beginPath();
+            ctxSat.moveTo(200, 160); ctxSat.lineTo(200, 240);
+            ctxSat.stroke();
+
+            // Geostationary Orbit (Equatorial, wide horizontal ellipse)
+            ctxSat.beginPath();
+            ctxSat.ellipse(cx, cy, 140, 40, 0, 0, Math.PI * 2);
+            ctxSat.strokeStyle = 'rgba(250, 204, 21, 0.3)';
+            ctxSat.stroke();
+
+            // Polar Orbit (Vertical narrow ellipse)
+            ctxSat.beginPath();
+            ctxSat.ellipse(cx, cy, 40, 90, 0, 0, Math.PI * 2);
+            ctxSat.strokeStyle = 'rgba(74, 222, 128, 0.3)';
+            ctxSat.stroke();
+
+            // Draw Geo Satellite
+            let geoX = cx + 140 * Math.cos(angleGeo);
+            let geoY = cy + 40 * Math.sin(angleGeo);
+            ctxSat.beginPath();
+            ctxSat.arc(geoX, geoY, 4, 0, Math.PI * 2);
+            ctxSat.fillStyle = '#facc15';
+            ctxSat.fill();
+
+            // Draw Polar Satellite
+            let polX = cx + 40 * Math.cos(anglePolar);
+            let polY = cy + 90 * Math.sin(anglePolar);
+            ctxSat.beginPath();
+            ctxSat.arc(polX, polY, 3, 0, Math.PI * 2);
+            ctxSat.fillStyle = '#4ade80';
+            ctxSat.fill();
+
+            // Update angles (Polar is faster)
+            angleGeo += 0.01;
+            anglePolar += 0.04;
+
+            requestAnimationFrame(drawSatellites);
+        }
+        drawSatellites();
+
+        // 3. Orbital Speed Simulator
+        const ctxOrb = document.getElementById('orbitalCanvas').getContext('2d');
+        let orbAngle = 0;
+        
+        function drawOrbitalSim() {
+            ctxOrb.clearRect(0, 0, 600, 300);
+            let rVal = parseFloat(document.getElementById('radiusSlider').value); // 1.2 to 4
+            
+            let displayR = rVal < 1.5 ? "Low Earth Orbit (Fast)" : rVal > 3.5 ? "High Orbit (Slow)" : "Medium Orbit";
+            document.getElementById('rDisplay').innerText = displayR;
+
+            const cx = 300, cy = 150;
+            const earthR = 30;
+            const pixelR = rVal * 35; // mapping radius to pixels
+
+            // Earth
+            ctxOrb.beginPath();
+            ctxOrb.arc(cx, cy, earthR, 0, Math.PI * 2);
+            ctxOrb.fillStyle = '#3b82f6';
+            ctxOrb.fill();
+
+            // Orbit path
+            ctxOrb.beginPath();
+            ctxOrb.arc(cx, cy, pixelR, 0, Math.PI * 2);
+            ctxOrb.strokeStyle = 'rgba(255,255,255,0.1)';
+            ctxOrb.stroke();
+
+            // Satellite
+            let satX = cx + pixelR * Math.cos(orbAngle);
+            let satY = cy + pixelR * Math.sin(orbAngle);
+            ctxOrb.beginPath();
+            ctxOrb.arc(satX, satY, 5, 0, Math.PI * 2);
+            ctxOrb.fillStyle = '#fff';
+            ctxOrb.fill();
+
+            // Velocity Vector (tangent)
+            let velScale = 20 / Math.sqrt(rVal); // v is proportional to 1/sqrt(r)
+            let vx = -Math.sin(orbAngle) * velScale;
+            let vy = Math.cos(orbAngle) * velScale;
+            
+            ctxOrb.beginPath();
+            ctxOrb.moveTo(satX, satY);
+            ctxOrb.lineTo(satX + vx * 2, satY + vy * 2);
+            ctxOrb.strokeStyle = 'red';
+            ctxOrb.lineWidth = 2;
+            ctxOrb.stroke();
+            ctxOrb.lineWidth = 1;
+
+            // Angular speed w = v/r proportional to r^-1.5
+            let angularSpeed = 0.05 / Math.pow(rVal, 1.5);
+            orbAngle += angularSpeed;
+
+            requestAnimationFrame(drawOrbitalSim);
+        }
+        drawOrbitalSim();
+
+        // 4. Energy Graph Static Drawer
+        const ctxEnergy = document.getElementById('energyCanvas').getContext('2d');
+        function drawEnergyGraph() {
+            ctxEnergy.clearRect(0, 0, 400, 350);
+            const cx = 50, cy = 175; // Origin
+            
+            // Axes
+            ctxEnergy.beginPath();
+            ctxEnergy.moveTo(cx, 20); ctxEnergy.lineTo(cx, 330); // Y axis
+            ctxEnergy.moveTo(20, cy); ctxEnergy.lineTo(380, cy); // X axis
+            ctxEnergy.strokeStyle = 'white';
+            ctxEnergy.stroke();
+            
+            ctxEnergy.fillStyle = 'white';
+            ctxEnergy.fillText("Energy", cx - 45, 30);
+            ctxEnergy.fillText("r", 370, cy + 15);
+            ctxEnergy.fillText("O", cx - 15, cy + 15);
+
+            // Graph Math: Let GMm = 1000. 
+            // K = 500/r
+            // E = -500/r
+            // U = -1000/r
+            
+            // Draw K (Kinetic)
+            ctxEnergy.beginPath();
+            for(let r = 10; r < 300; r++) {
+                let K = 1500 / r;
+                let y = cy - K;
+                if(r === 10) ctxEnergy.moveTo(cx + r, y);
+                else ctxEnergy.lineTo(cx + r, y);
+            }
+            ctxEnergy.strokeStyle = '#3b82f6'; // Blue
+            ctxEnergy.lineWidth = 2;
+            ctxEnergy.stroke();
+            ctxEnergy.fillText("K (r)", cx + 250, cy - 10);
+
+            // Draw E (Total Energy)
+            ctxEnergy.beginPath();
+            for(let r = 10; r < 300; r++) {
+                let E = -1500 / r;
+                let y = cy - E;
+                if(r === 10) ctxEnergy.moveTo(cx + r, y);
+                else ctxEnergy.lineTo(cx + r, y);
+            }
+            ctxEnergy.strokeStyle = '#a855f7'; // Purple
+            ctxEnergy.stroke();
+            ctxEnergy.fillText("E (r)", cx + 250, cy + 15);
+
+            // Draw U (Potential Energy)
+            ctxEnergy.beginPath();
+            for(let r = 10; r < 300; r++) {
+                let U = -3000 / r;
+                let y = cy - U;
+                if(r === 10) ctxEnergy.moveTo(cx + r, y);
+                else ctxEnergy.lineTo(cx + r, y);
+            }
+            ctxEnergy.strokeStyle = '#ef4444'; // Red
+            ctxEnergy.setLineDash([5, 5]); // Dashed line for U
+            ctxEnergy.stroke();
+            ctxEnergy.setLineDash([]); // Reset
+            ctxEnergy.fillText("U (r)", cx + 250, cy + 30);
+        }
+        drawEnergyGraph();
+
+
+        // --- Quiz Logic ---
+        const quizData = [
+            {
+                q: "1. The value of escape speed of a body depends upon:",
+                options: ["Mass of the body", "Angle of projection", "Mass and radius of the planet", "All of the above"],
+                ans: 2
+            },
+            {
+                q: "2. The orbit of a geostationary satellite is:",
+                options: ["Polar orbit", "Equatorial and circular", "Highly elliptical", "None of these"],
+                ans: 1
+            },
+            {
+                q: "3. What is the relation between escape speed (v_e) and orbital speed (v_0) for a satellite close to earth?",
+                options: ["v_e = v_0", "v_e = 2 v_0", "v_e = \u221A2 v_0", "v_e = v_0 / \u221A2"],
+                ans: 2
+            },
+            {
+                q: "4. The period of revolution of a geostationary satellite is exactly:",
+                options: ["24 hours", "12 hours", "365 days", "100 minutes"],
+                ans: 0
+            },
+            {
+                q: "5. Total energy of a circularly orbiting satellite is:",
+                options: ["Positive", "Zero", "Negative", "Infinite"],
+                ans: 2
+            },
+            {
+                q: "6. Polar satellites are mainly used for:",
+                options: ["TV broadcasting", "Telecommunication", "Remote sensing & weather forecasting", "Interplanetary travel"],
+                ans: 2
+            },
+            {
+                q: "7. Binding energy of a satellite revolving in orbit of radius r is:",
+                options: ["GMm / r", "GMm / 2r", "-GMm / 2r", "-GMm / r"],
+                ans: 1
+            },
+            {
+                q: "8. If the kinetic energy of an orbiting satellite is doubled, the satellite will:",
+                options: ["Fall to earth", "Remain in same orbit", "Escape from gravitational pull", "Orbit in a smaller radius"],
+                ans: 2
+            }
+        ];
+
+        const quizContainer = document.getElementById('quizContainer');
+        
+        quizData.forEach((item, index) => {
+            let html = `<div class="bg-space-800 p-5 rounded-lg border border-space-700">
+                <p class="font-bold text-lg mb-3">${item.q}</p>
+                <div class="space-y-2">`;
+            
+            item.options.forEach((opt, optIdx) => {
+                html += `
+                    <label class="flex items-center space-x-3 cursor-pointer p-2 rounded hover:bg-space-700 transition">
+                        <input type="radio" name="q${index}" value="${optIdx}" class="form-radio text-space-accent h-4 w-4">
+                        <span class="text-gray-300">${opt}</span>
+                    </label>
+                `;
+            });
+            
+            html += `</div>
+                <div id="feedback${index}" class="mt-3 text-sm hidden font-bold"></div>
+            </div>`;
+            quizContainer.innerHTML += html;
+        });
+
+        function submitQuiz() {
+            let score = 0;
+            quizData.forEach((item, index) => {
+                const selected = document.querySelector(`input[name="q${index}"]:checked`);
+                const feedbackDiv = document.getElementById(`feedback${index}`);
+                feedbackDiv.classList.remove('hidden');
+                
+                if (selected) {
+                    if (parseInt(selected.value) === item.ans) {
+                        score++;
+                        feedbackDiv.innerHTML = "✓ Correct!";
+                        feedbackDiv.className = "mt-3 text-sm font-bold text-green-400";
+                    } else {
+                        feedbackDiv.innerHTML = `✗ Incorrect. Correct answer: ${item.options[item.ans]}`;
+                        feedbackDiv.className = "mt-3 text-sm font-bold text-red-400";
+                    }
+                } else {
+                    feedbackDiv.innerHTML = `⚠ Not attempted. Correct answer: ${item.options[item.ans]}`;
+                    feedbackDiv.className = "mt-3 text-sm font-bold text-yellow-400";
+                }
+            });
+
+            document.getElementById('quizScore').innerText = score;
+            document.getElementById('finalScore').innerText = score;
+            
+            let msg = "";
+            if(score === 8) msg = "Outstanding! You have mastered Gravitation.";
+            else if(score >= 5) msg = "Great job! A solid understanding of the concepts.";
+            else msg = "Good effort! Review the derivations and try again.";
+            
+            document.getElementById('resultMessage').innerText = msg;
+            
+            // Show custom modal instead of alert
+            document.getElementById('quizResultModal').classList.remove('hidden');
+        }
+
+        function closeQuizModal() {
+            document.getElementById('quizResultModal').classList.add('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+    </script>
+</body>
+</html>
